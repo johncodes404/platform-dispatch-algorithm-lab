@@ -1,0 +1,48 @@
+name: 课堂试用反馈
+description: 分享一次去识别化的教学或小组试玩观察
+title: "[Classroom] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请只提供课堂层面的汇总信息，不要填写学生姓名、联系方式、照片或可识别经历。
+  - type: dropdown
+    id: group
+    attributes:
+      label: 学习阶段
+      options:
+        - 小学高年级
+        - 初中
+        - 高中
+        - 大学
+        - 教师培训
+        - 公共活动
+    validations:
+      required: true
+  - type: input
+    id: duration
+    attributes:
+      label: 活动时长和大致人数
+      placeholder: 例如：45 分钟，约 30 人，6 个小组
+  - type: textarea
+    id: activity
+    attributes:
+      label: 你如何组织活动
+    validations:
+      required: true
+  - type: textarea
+    id: insight
+    attributes:
+      label: 最能引发思考的环节
+    validations:
+      required: true
+  - type: textarea
+    id: confusion
+    attributes:
+      label: 学习者最困惑或容易误解的地方
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 下一次你希望怎样改进
