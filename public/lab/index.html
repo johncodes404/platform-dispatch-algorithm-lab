@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#eaf8ef" />
+    <meta
+      name="description"
+      content="一个可以亲手改变派单权重、观察风险如何重新分配的互动学习实验室。"
+    />
+    <title>平台算法权力实验室</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#dispatch-lab">跳到派单实验</a>
+
+    <header class="topbar">
+      <a class="brand" href="#dispatch-lab" aria-label="返回派单实验">
+        <span class="brand-flask" aria-hidden="true">⚗</span>
+        <span>平台算法权力实验室</span>
+      </a>
+      <nav class="main-nav" aria-label="主导航">
+        <a class="nav-link active" href="#dispatch-lab">派单实验</a>
+        <a class="nav-link" href="#peak-lab">午高峰</a>
+        <a class="nav-link" href="#compare-lab">制度对照</a>
+        <a class="nav-link" href="#principles">原理拆解</a>
+      </nav>
+      <button class="icon-button" id="sound-toggle" type="button" aria-label="关闭音效" aria-pressed="true">♪</button>
+    </header>
+
+    <main>
+      <section class="hero section" id="dispatch-lab" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div>
+            <p class="eyebrow">MISSION 01 · 谁来接这一单？</p>
+            <h1 id="hero-title">改变权重，<span>就是重新分配风险。</span></h1>
+          </div>
+          <p class="hero-intro">
+            同一笔订单、同一组骑手，只改目标函数，派单结果就可能完全不同。先别急着读理论——亲手当一次平台。
+          </p>
+        </div>
+
+        <div class="mission-strip" aria-label="当前任务信息">
+          <span class="live-dot"></span>
+          <strong>11:45</strong>
+          <span>午高峰</span>
+          <span class="mission-divider"></span>
+          <span>订单 <strong>#2026-001</strong></span>
+          <span>承诺 <strong>25 分钟</strong></span>
+          <span class="demand-chip">需求旺盛 ↑</span>
+        </div>
+
+        <div class="lab-grid">
+          <article class="map-card board-card" aria-labelledby="map-title">
+            <div class="card-heading map-heading">
+              <div>
+                <p class="card-kicker">实时沙盘</p>
+                <h2 id="map-title">城市派单地图</h2>
+              </div>
+              <div class="event-control">
+                <label for="event-select">突发事件</label>
+                <select id="event-select">
+                  <option value="normal">天气正常</option>
+                  <option value="rain">暴雨突袭</option>
+                  <option value="restaurant">商家晚出餐</option>
+                  <option value="elevator">顾客电梯故障</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="city-map" id="city-map">
+              <div class="river"></div>
+              <div class="road road-h r1"></div>
+              <div class="road road-h r2"></div>
+              <div class="road road-h r3"></div>
+              <div class="road road-v c1"></div>
+              <div class="road road-v c2"></div>
+              <div class="road road-v c3"></div>
+              <div class="building b1"></div><div class="building b2"></div>
+              <div class="building b3"></div><div class="building b4"></div>
+              <div class="building b5"></div><div class="building b6"></div>
+              <div class="park p1">♣</div><div class="park p2">♣</div>
+
+              <svg class="routes" viewBox="0 0 900 520" preserveAspectRatio="none" aria-hidden="true">
+                <path id="route-a" class="route route-a" d="M150,94 C250,96 245,236 380,238 S520,244 592,238" />
+                <path id="route-b" class="route route-b" d="M110,305 C260,308 315,322 380,270 S510,246 592,238" />
+                <path id="route-c" class="route route-c" d="M210,438 C360,438 392,390 420,310 S520,245 592,238" />
+                <path class="route route-order" d="M592,238 C690,248 730,310 788,365" />
+              </svg>
+
+              <div class="map-node restaurant-node" title="餐厅">
+                <span class="node-icon">餐</span><span class="node-label">小满餐厅</span>
+              </div>
+              <div class="map-node customer-node" title="顾客">
+                <span class="node-icon">客</span><span class="node-label">顾客</span>
+              </div>
+
+              <button class="rider-token rider-a" data-rider="A" type="button" aria-label="查看骑手A">
+                <span class="rider-avatar">A</span><span class="battery">疲劳 92%</span>
+              </button>
+              <button class="rider-token rider-b" data-rider="B" type="button" aria-label="查看骑手B">
+                <span class="rider-avatar">B</span><span class="battery">疲劳 32%</span>
+              </button>
+              <button class="rider-token rider-c" data-rider="C" type="button" aria-label="查看骑手C">
+                <span class="rider-avatar">C</span><span class="battery">疲劳 12%</span>
+              </button>
+
+              <div class="weather-layer" id="weather-layer" aria-hidden="true"></div>
+              <div class="map-legend">
+                <span><i class="legend-a"></i>A 路线</span>
+                <span><i class="legend-b"></i>B 路线</span>
+                <span><i class="legend-c"></i>C 路线</span>
+                <span><i class="legend-order"></i>送达</span>
+              </div>
+            </div>
+
+            <div class="rider-drawer" id="rider-drawer" aria-live="polite">
+              <div class="drawer-token token-a">A</div>
+              <div>
+                <strong id="drawer-name">骑手 A · 熟练骑手</strong>
+                <p id="drawer-copy">距离最近，三笔订单高度顺路；但已经连续工作 4.2 小时。</p>
+              </div>
+              <div class="drawer-stats">
+                <span><b id="drawer-load">3</b> 手头订单</span>
+                <span><b id="drawer-income">¥82</b> 近2小时</span>
+              </div>
+            </div>
+          </article>
+
+          <aside class="control-card board-card" aria-labelledby="weights-title">
+            <div class="card-heading">
+              <div>
+                <p class="card-kicker">目标函数</p>
+                <h2 id="weights-title">算法权重调节</h2>
+              </div>
+              <button class="help-button" id="formula-help" type="button" aria-label="查看评分公式">?</button>
+            </div>
+
+            <div class="preset-switch" role="group" aria-label="权重预设">
+              <button class="preset active" data-preset="platform" type="button">平台效率</button>
+              <button class="preset" data-preset="worker" type="button">劳动者友好</button>
+              <button class="preset" data-preset="custom" type="button">自定义</button>
+            </div>
+
+            <div class="sliders" id="weight-sliders"></div>
+
+            <label class="guardrail">
+              <input id="fatigue-guard" type="checkbox" />
+              <span class="switch-track"><span></span></span>
+              <span>
+                <strong>疲劳保护线</strong>
+                <small>疲劳超过 85% 的骑手不得接新单</small>
+              </span>
+            </label>
+
+            <button class="run-button" id="run-dispatch" type="button">
+              <span>运行派单</span><span aria-hidden="true">➜</span>
+            </button>
+            <p class="run-hint">综合代价越低，越容易获得订单</p>
+          </aside>
+        </div>
+
+        <article class="result-board board-card" id="result-board" aria-live="polite">
+          <div class="winner-block">
+            <div class="winner-token token-a" id="winner-token">A</div>
+            <div>
+              <p>本轮派单结果</p>
+              <h2><span id="winner-name">骑手 A</span> 获得订单</h2>
+              <p id="winner-reason">速度和成本优势压过了疲劳风险。</p>
+            </div>
+          </div>
+          <div class="winner-metrics">
+            <div><span>预计送达</span><strong id="winner-eta">23.7<small> 分</small></strong></div>
+            <div><span>疲劳度</span><strong class="risk-number" id="winner-fatigue">92<small>%</small></strong></div>
+            <div><span>综合代价</span><strong id="winner-score">0.050</strong></div>
+          </div>
+          <div class="risk-message" id="risk-message">
+            <span class="risk-icon">!</span>
+            <div><strong>这不是“最优答案”</strong><p>只是当前目标函数的答案。改变权重，就是重新分配风险。</p></div>
+          </div>
+        </article>
+
+        <div class="score-panel board-card">
+          <div class="score-title">
+            <div>
+              <p class="card-kicker">可解释决策</p>
+              <h2>三名骑手怎样被算法打分？</h2>
+            </div>
+            <p>点击骑手或拖动权重，分数立即重算。</p>
+          </div>
+          <div class="score-table-wrap">
+            <table class="score-table">
+              <thead><tr><th>候选骑手</th><th>ETA</th><th>当前负荷</th><th>疲劳</th><th>近期收入</th><th>综合代价</th><th>状态</th></tr></thead>
+              <tbody id="score-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="peak-section section" id="peak-lab" aria-labelledby="peak-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">MISSION 02 · 时间会暴露制度</p><h2 id="peak-title">跑完一个午高峰</h2></div>
+          <p>单笔派单看不出结构性后果。连续运行六轮，观察效率如何积累成疲劳，公平又会付出什么代价。</p>
+        </div>
+
+        <div class="peak-grid">
+          <article class="simulation-card board-card">
+            <div class="sim-topline">
+              <div><span class="round-label">当前轮次</span><strong><span id="round-count">0</span> / 6</strong></div>
+              <div class="sim-actions">
+                <button class="secondary-button" id="reset-peak" type="button">重新开始</button>
+                <button class="primary-small" id="next-order" type="button">送来下一单 ➜</button>
+              </div>
+            </div>
+            <div class="round-track" id="round-track" aria-label="模拟进度"></div>
+            <div class="peak-riders" id="peak-riders"></div>
+            <div class="event-card" id="peak-event">
+              <span class="event-die">?</span>
+              <div><strong>等待下一笔订单</strong><p>每轮都会出现不同的路况、商家和顾客条件。</p></div>
+            </div>
+          </article>
+
+          <aside class="ledger-card board-card">
+            <p class="card-kicker">实时结算</p>
+            <h3>谁得到了什么？</h3>
+            <div class="ledger-row"><span>平台履约率</span><strong id="metric-rate">—</strong></div>
+            <div class="ledger-row"><span>平均送达时间</span><strong id="metric-eta">—</strong></div>
+            <div class="ledger-row"><span>最高疲劳度</span><strong id="metric-fatigue">92%</strong></div>
+            <div class="ledger-row"><span>收入差距</span><strong id="metric-gap">¥64</strong></div>
+            <div class="ledger-verdict" id="ledger-verdict">
+              <span>实验提示</span>
+              <p>先选一套权重，再连续运行六轮。算法的“副作用”往往需要时间才能显现。</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="compare-section section" id="compare-lab" aria-labelledby="compare-title">
+        <div class="section-heading compact-heading">
+          <div><p class="eyebrow">MISSION 03 · 没有无代价的方案</p><h2 id="compare-title">把两套制度放在同一张桌上</h2></div>
+          <button class="compare-button" id="run-compare" type="button">重新计算对照</button>
+        </div>
+        <div class="comparison-grid">
+          <article class="policy-card platform-policy board-card">
+            <div class="policy-badge">A</div>
+            <p class="card-kicker">POLICY A</p>
+            <h3>效率优先</h3>
+            <p>速度、超时和成本占据绝对权重，疲劳只是一个可以被交换的小数。</p>
+            <div class="policy-winner" id="compare-platform-winner"></div>
+            <div class="mini-bars" id="platform-bars"></div>
+          </article>
+          <div class="versus"><span>VS</span><small>同一订单</small></div>
+          <article class="policy-card worker-policy board-card">
+            <div class="policy-badge">B</div>
+            <p class="card-kicker">POLICY B</p>
+            <h3>劳动者友好</h3>
+            <p>保留准时要求，同时把疲劳保护、负荷和收入均衡写进目标函数。</p>
+            <div class="policy-winner" id="compare-worker-winner"></div>
+            <div class="mini-bars" id="worker-bars"></div>
+          </article>
+        </div>
+        <div class="tradeoff-strip" id="tradeoff-strip"></div>
+      </section>
+
+      <section class="principles-section section" id="principles" aria-labelledby="principles-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">MISSION 04 · 拆开黑箱</p><h2 id="principles-title">平台算法到底是谁写的？</h2></div>
+          <p>代码由工程师完成，但代码服从的目标，来自企业组织中的权力分工。</p>
+        </div>
+        <div class="pipeline" aria-label="平台算法形成过程">
+          <article><span>01</span><strong>管理层</strong><p>确定增长、成本与履约目标</p></article>
+          <i>→</i>
+          <article><span>02</span><strong>产品与运营</strong><p>把目标翻译成指标和考核</p></article>
+          <i>→</i>
+          <article><span>03</span><strong>数据团队</strong><p>预测 ETA、出餐和超时风险</p></article>
+          <i>→</i>
+          <article><span>04</span><strong>算法工程</strong><p>寻找综合代价最低的匹配</p></article>
+          <i>→</i>
+          <article><span>05</span><strong>系统执行</strong><p>派单、计价、考核与奖惩</p></article>
+        </div>
+        <div class="insight-grid">
+          <article class="insight-card red-card"><span>目标缺项</span><h3>没被计算的权益，等于不存在</h3><p>只算时效与成本，却不算疲劳、等餐和收入稳定，系统就会精确地忽略它们。</p></article>
+          <article class="insight-card blue-card"><span>误差转嫁</span><h3>模型犯错，往往由骑手买单</h3><p>GPS 漂移、商家晚出餐、电梯拥堵，最终可能统一表现为骑手“超时”。</p></article>
+          <article class="insight-card yellow-card"><span>指标棘轮</span><h3>今天的纪录，会变成明天的底线</h3><p>效率提高后，节省的时间未必成为休息，反而可能成为下一轮更紧的考核标准。</p></article>
+        </div>
+        <blockquote>
+          <p>算法治理不是让公众阅读几百万行源码，而是让目标、约束、数据、结果和责任能够被追问。</p>
+          <cite>— 本实验的核心结论</cite>
+        </blockquote>
+      </section>
+    </main>
+
+    <footer>
+      <div><strong>平台算法权力实验室</strong><p>一个用于理解算法目标、劳动过程与平台治理的开源学习项目。</p></div>
+      <div class="footer-links"><a href="https://github.com/johncodes404/platform-dispatch-algorithm-lab" target="_blank" rel="noreferrer">GitHub 源码 ↗</a><a href="#dispatch-lab">再玩一次 ↑</a></div>
+    </footer>
+
+    <dialog id="formula-dialog">
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="关闭">×</button>
+      <p class="card-kicker">评分公式</p>
+      <h2>算法怎样决定“谁最合适”？</h2>
+      <div class="formula-box">综合代价 = Σ（指标归一化值 × 指标权重）</div>
+      <p>ETA、超时、成本、疲劳和公平先被压缩到 0～1，再乘以相应权重。综合代价最低者获单。</p>
+      <p class="dialog-note">关键并不是公式多复杂，而是谁有权决定哪些指标进入公式、各占多少。</p>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
