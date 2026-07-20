@@ -1,0 +1,35 @@
+name: 错误报告
+description: 报告可以复现的页面、算法或文档问题
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请勿提交密钥、真实定位、学生姓名或其他个人信息。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题是什么
+      description: 请描述实际发生了什么，以及你原本期待什么。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开……
+        2. 选择……
+        3. 点击……
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 使用环境
+      description: 浏览器、设备、屏幕大小；如为课堂使用，可写年龄段和授课方式，但不要写个人身份。
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截图或补充信息
+      description: 可粘贴截图、控制台错误或相关链接，请先去除个人信息。
