@@ -1,6 +1,13 @@
 (() => {
   "use strict";
 
+  /*
+   * 页面采用“数据 → 情境变换 → 归一化评分 → 解释 → 渲染”的单向流程。
+   * 计算与界面尽量分离，是为了让学习者和贡献者能追踪每个结果的来源。
+   * 这是透明教学模型，不对应任何真实平台的私有派单代码。
+   */
+
+  // 基础候选人：数值刻意制造速度、成本、疲劳与公平之间的冲突。
   const riders = [
     {
       id: "A",
@@ -49,6 +56,7 @@
     },
   ];
 
+  // 可调目标。每个 key 必须与 evaluate() 中的指标名一致。
   const controls = [
     { key: "eta", label: "效率", hint: "预计送达", icon: "速", color: "#2457f5" },
     { key: "late", label: "超时", hint: "违约风险", icon: "时", color: "#f04b3e" },
@@ -57,11 +65,13 @@
     { key: "fairness", label: "公平", hint: "负荷与收入", icon: "衡", color: "#24b47e" },
   ];
 
+  // 预设代表不同的制度选择，而不是“正确/错误”答案。
   const presets = {
     platform: { eta: 50, late: 25, cost: 20, fatigue: 1, fairness: 1 },
     worker: { eta: 25, late: 25, cost: 8, fatigue: 17, fairness: 25 },
   };
 
+  // 情境会改变可观测条件，用于演示预测误差和外部风险如何进入系统。
   const eventEffects = {
     normal: { name: "天气正常", note: "道路与商家状态稳定。" },
     rain: { name: "暴雨突袭", note: "所有路线变慢，远距离骑手承担更多风险。" },
@@ -69,6 +79,7 @@
     elevator: { name: "顾客电梯故障", note: "最后一百米突然增加六分钟，历史平均值失灵。" },
   };
 
+  // 页面级状态：所有派单重算都从这里读取当前政策和交互选择。
   let weights = { ...presets.platform };
   let activePreset = "platform";
   let selectedRider = "A";
@@ -76,9 +87,11 @@
   let soundEnabled = true;
   let toastTimer;
 
+  // 轻量 DOM 帮助函数，避免引入框架和构建依赖。
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
+  // 音效只提供反馈；失败或关闭时不能影响任何核心操作。
   function playTone(frequency = 520, duration = 0.055) {
     if (!soundEnabled || !window.AudioContext) return;
     try {
@@ -106,6 +119,7 @@
     toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
   }
 
+  // 根据 controls 生成控件，避免 HTML 与算法指标清单出现两份真相。
   function renderSliders() {
     const root = $("#weight-sliders");
     root.innerHTML = controls
@@ -163,6 +177,12 @@
     }
   }
 
+  /**
+   * 将课堂事件应用到候选人快照，不修改原始数据。
+   * @param {Array<object>} source 基础候选人列表。
+   * @param {string} eventName 当前事件标识。
+   * @returns {Array<object>} 可安全用于本轮评分的新列表。
+   */
   function getScenarioRiders(source = riders, eventName = $("#event-select")?.value || "normal") {
     return source.map((original, index) => {
       const rider = { ...original };
@@ -183,6 +203,10 @@
     });
   }
 
+  /**
+   * 对同一轮候选人的某项指标做 min-max 归一化。
+   * 所有人数值相同时返回 0，表示该指标不能区分本轮候选人。
+   */
   function normalize(items, key) {
     const values = items.map((item) => item[key]);
     const min = Math.min(...values);
@@ -191,6 +215,13 @@
     return values.map((value) => (value - min) / (max - min));
   }
 
+  /**
+   * 执行核心派单评分。
+   * 先应用疲劳硬约束，再计算归一化加权成本；score 越低越优先。
+   * 平分时用 ETA 作为稳定、可解释的次级排序条件。
+   *
+   * @returns {{results: Array<object>, winner: object|undefined}}
+   */
   function evaluate(weightSet = weights, source = getScenarioRiders(), guard = $("#fatigue-guard")?.checked || false) {
     const keys = ["eta", "late", "cost", "fatigue", "fairness"];
     const normalized = Object.fromEntries(keys.map((key) => [key, normalize(source, key)]));
@@ -211,6 +242,10 @@
     return { results, winner };
   }
 
+  /**
+   * 把计算结果翻译成人能讨论的理由。
+   * 提醒：这里的解释必须跟随 winner 的真实指标，不可写成脱离计算的宣传语。
+   */
   function winnerExplanation(winner, resultSet) {
     if (!winner) return "没有骑手符合当前硬约束。";
     if (winner.id === "A" && winner.fatigue >= 85) return "速度和顺路优势压过了极高的疲劳风险。";
@@ -220,6 +255,7 @@
     return `骑手在“${controls.find((control) => control.key === lowestPart)?.label || "综合"}”指标上形成优势。`;
   }
 
+  // 决策透视表直接使用 evaluation，保证排名、状态与主结果来自同一次计算。
   function renderScoreTable(evaluation) {
     const body = $("#score-table-body");
     body.innerHTML = evaluation.results
@@ -279,6 +315,7 @@
     }
   }
 
+  // 单一刷新入口：计算一次，再把同一结果分发给各个视图。
   function refreshDecision(animate = false) {
     const evaluation = evaluate();
     renderScoreTable(evaluation);
@@ -341,6 +378,7 @@
       .join("");
   }
 
+  // 连续模拟让一次派单的局部优势累积成疲劳和收入差距。
   const peakEvents = [
     { icon: "☀", title: "写字楼午餐单", copy: "路线顺畅，承诺 26 分钟。", event: "normal", etaShift: 0 },
     { icon: "雨", title: "阵雨提前到来", copy: "远距离路线额外增加 5 分钟。", event: "rain", etaShift: 4 },
@@ -352,6 +390,7 @@
 
   let peakState;
 
+  // 每次重置都生成新对象，防止上一局的可变状态泄漏到下一局。
   function initialPeakState() {
     return {
       round: 0,
@@ -412,6 +451,10 @@
     }
   }
 
+  /**
+   * 推进一轮高峰模拟：生成情境、派单、累计结果并更新骑手状态。
+   * 未获单者得到少量休息；获单者的订单、收入、负荷和疲劳都会变化。
+   */
   function nextPeakOrder() {
     if (peakState.round >= 6) return;
     const event = peakEvents[peakState.round];
@@ -450,6 +493,7 @@
     showToast("午高峰模拟已重置；它将使用你当前设置的权重。");
   }
 
+  // 导航高亮属于渐进增强；不影响页面阅读和算法操作。
   function initNavigation() {
     const links = $$(".nav-link");
     const sections = links.map((link) => $(link.getAttribute("href"))).filter(Boolean);
@@ -464,6 +508,7 @@
     sections.forEach((section) => observer.observe(section));
   }
 
+  // 所有一次性事件绑定集中在初始化阶段，避免重复监听。
   function bindEvents() {
     $$(".preset").forEach((button) => button.addEventListener("click", () => setPreset(button.dataset.preset)));
     $$(".rider-token").forEach((button) => button.addEventListener("click", () => selectRider(button.dataset.rider)));
@@ -506,6 +551,7 @@
     });
   }
 
+  // 初始化顺序确保控件与监听器就绪后，才进行首次计算和渲染。
   function init() {
     renderSliders();
     bindEvents();
