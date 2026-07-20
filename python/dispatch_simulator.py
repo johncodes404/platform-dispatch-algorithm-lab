@@ -31,6 +31,8 @@ class Point:
 
 @dataclass(frozen=True)
 class Order:
+    """A delivery request and the time promises used by the teaching model."""
+
     order_id: str
     restaurant: Point
     customer: Point
@@ -41,6 +43,8 @@ class Order:
 
 @dataclass(frozen=True)
 class Rider:
+    """A candidate courier snapshot captured at one dispatch decision."""
+
     rider_id: str
     position: Point
     active_orders: int
@@ -54,6 +58,8 @@ class Rider:
 
 @dataclass(frozen=True)
 class Policy:
+    """Value choices: soft-objective weights plus a non-tradeable safety line."""
+
     name: str
     description: str
     weights: Mapping[str, float]
@@ -62,6 +68,8 @@ class Policy:
 
 @dataclass
 class Evaluation:
+    """Traceable intermediate and final values for one candidate rider."""
+
     rider: Rider
     raw: Dict[str, float]
     normalized: Dict[str, float]
@@ -169,6 +177,14 @@ def _normalise(values: Sequence[float]) -> List[float]:
 
 
 def evaluate_candidates(order: Order, riders: Iterable[Rider], policy: Policy) -> List[Evaluation]:
+    """Evaluate every rider while retaining reasons for ineligible candidates.
+
+    Hard constraints run first because an unacceptable safety condition should
+    not become exchangeable for a better ETA or lower platform cost. Eligible
+    candidates are then normalised within this decision set and scored using
+    the selected policy. Lower scores are better.
+    """
+
     evaluations: List[Evaluation] = []
 
     for rider in riders:
@@ -200,6 +216,8 @@ def evaluate_candidates(order: Order, riders: Iterable[Rider], policy: Policy) -
 
 
 def dispatch(order: Order, riders: Iterable[Rider], policy: Policy) -> Evaluation:
+    """Return the lowest-cost eligible candidate, using ETA to break ties."""
+
     eligible = [item for item in evaluate_candidates(order, riders, policy) if item.eligible]
     if not eligible:
         raise RuntimeError("没有符合硬约束的可派单骑手")
@@ -207,6 +225,8 @@ def dispatch(order: Order, riders: Iterable[Rider], policy: Policy) -> Evaluatio
 
 
 def demo_scenario() -> tuple[Order, List[Rider]]:
+    """Build a small scenario whose candidates expose meaningful trade-offs."""
+
     order = Order(
         order_id="ORDER-2026-001",
         restaurant=Point(0.0, 0.0),
