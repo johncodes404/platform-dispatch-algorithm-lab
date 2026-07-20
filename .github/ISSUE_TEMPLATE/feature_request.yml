@@ -1,0 +1,50 @@
+name: 功能或游戏机制建议
+description: 提出新的交互、角色、事件、指标或工程改进
+title: "[Idea] "
+body:
+  - type: textarea
+    id: learning_problem
+    attributes:
+      label: 想解决的学习问题
+      description: 学习者目前看不见、理解不了或做不到什么？
+    validations:
+      required: true
+  - type: dropdown
+    id: audience
+    attributes:
+      label: 主要受众
+      options:
+        - 小学高年级
+        - 初中或高中
+        - 大学
+        - 教师或研究者
+        - 普通公众
+        - 开发贡献者
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 最小可行方案
+      description: 请描述最小版本的输入、操作和反馈。
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: 受益、成本与风险
+      description: 谁会受益，谁可能承担额外成本或被误解？
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 资料或观察
+      description: 如涉及现实性主张，请附可靠来源；个人观察请明确标注。
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我没有提交真实个人数据或不可公开信息
+          required: true
+        - label: 我理解本项目是教学模拟，不是真实平台源码
+          required: true
